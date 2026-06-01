@@ -23,7 +23,8 @@ if os.getenv("HBNB_TYPE_STORAGE") == "db":
             ForeignKey("amenities.id"),
             primary_key=True,
             nullable=False
-        )
+        ),
+        extend_existing=True
     )
 
 
