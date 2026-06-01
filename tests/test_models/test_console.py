@@ -115,15 +115,43 @@ class TestConsoleCreate(unittest.TestCase):
         storage.save()
 
     @unittest.skipIf(not IS_DB, "DBStorage create test only")
-    def test_create_state_db(self):
-        """Test that create State works with DBStorage."""
-        output = run_cmd('create State name="DBState"')
+    def test_create_state_db_count(self):
+        """Test that create State adds exactly one row to states via MySQLdb."""
+        import MySQLdb
+        conn = MySQLdb.connect(
+            host=os.getenv("HBNB_MYSQL_HOST", "localhost"),
+            user=os.getenv("HBNB_MYSQL_USER"),
+            passwd=os.getenv("HBNB_MYSQL_PWD"),
+            db=os.getenv("HBNB_MYSQL_DB")
+        )
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM states")
+        before = cur.fetchone()[0]
+        cur.close()
+        conn.close()
+
+        output = run_cmd('create State name="DBConsoleState"')
         self.assertEqual(len(output), 36)
+
+        conn = MySQLdb.connect(
+            host=os.getenv("HBNB_MYSQL_HOST", "localhost"),
+            user=os.getenv("HBNB_MYSQL_USER"),
+            passwd=os.getenv("HBNB_MYSQL_PWD"),
+            db=os.getenv("HBNB_MYSQL_DB")
+        )
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM states")
+        after = cur.fetchone()[0]
+        cur.close()
+        conn.close()
+
+        self.assertEqual(after - before, 1)
+
         key = "State.{}".format(output)
-        self.assertIn(key, storage.all())
-        obj = storage.all()[key]
-        storage.delete(obj)
-        storage.save()
+        obj = storage.all().get(key)
+        if obj:
+            storage.delete(obj)
+            storage.save()
 
 
 class TestConsoleShow(unittest.TestCase):
@@ -181,6 +209,86 @@ class TestConsoleDestroy(unittest.TestCase):
         """Test destroy with no id prints error."""
         output = run_cmd("destroy State")
         self.assertEqual(output, "** instance id missing **")
+
+
+class TestConsoleUpdate(unittest.TestCase):
+    """Tests for the console do_update command."""
+
+    def test_update_no_class(self):
+        """Test update with no class name prints error."""
+        output = run_cmd("update")
+        self.assertEqual(output, "** class name missing **")
+
+    def test_update_invalid_class(self):
+        """Test update with invalid class name prints error."""
+        output = run_cmd("update FakeClass")
+        self.assertEqual(output, "** class doesn't exist **")
+
+    def test_update_no_id(self):
+        """Test update with no id prints error."""
+        output = run_cmd("update State")
+        self.assertEqual(output, "** instance id missing **")
+
+    def test_update_invalid_id(self):
+        """Test update with non-existent id prints error."""
+        output = run_cmd("update State fake-id-0000")
+        self.assertEqual(output, "** no instance found **")
+
+    @unittest.skipIf(IS_DB, "FileStorage update attribute test only")
+    def test_update_no_attribute(self):
+        """Test update with no attribute name prints error (FileStorage)."""
+        s = State()
+        s.name = "UpdateTest"
+        storage.new(s)
+        output = run_cmd("update State {}".format(s.id))
+        self.assertEqual(output, "** attribute name missing **")
+        storage.delete(s)
+        storage.save()
+
+    @unittest.skipIf(IS_DB, "FileStorage update value test only")
+    def test_update_no_value(self):
+        """Test update with no attribute value prints error (FileStorage)."""
+        s = State()
+        s.name = "UpdateValueTest"
+        storage.new(s)
+        output = run_cmd("update State {} name".format(s.id))
+        self.assertEqual(output, "** value missing **")
+        storage.delete(s)
+        storage.save()
+
+    @unittest.skipIf(IS_DB, "FileStorage update sets attribute test only")
+    def test_update_sets_attribute(self):
+        """Test update sets the given attribute on the object (FileStorage)."""
+        s = State()
+        s.name = "BeforeUpdate"
+        storage.new(s)
+        run_cmd('update State {} name "AfterUpdate"'.format(s.id))
+        key = "State.{}".format(s.id)
+        updated = storage.all().get(key)
+        self.assertIsNotNone(updated)
+        self.assertEqual(updated.name, "AfterUpdate")
+        storage.delete(s)
+        storage.save()
+
+    @unittest.skipIf(not IS_DB, "DBStorage update test only")
+    def test_update_no_attribute_db(self):
+        """Test update with no attribute name prints error (DBStorage)."""
+        s = State(name="DBUpdateTest")
+        s.save()
+        output = run_cmd("update State {}".format(s.id))
+        self.assertEqual(output, "** attribute name missing **")
+        storage.delete(s)
+        storage.save()
+
+    @unittest.skipIf(not IS_DB, "DBStorage update no value test only")
+    def test_update_no_value_db(self):
+        """Test update with no attribute value prints error (DBStorage)."""
+        s = State(name="DBUpdateValueTest")
+        s.save()
+        output = run_cmd("update State {} name".format(s.id))
+        self.assertEqual(output, "** value missing **")
+        storage.delete(s)
+        storage.save()
 
 
 if __name__ == "__main__":
