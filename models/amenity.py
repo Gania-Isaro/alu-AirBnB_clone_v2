@@ -12,8 +12,8 @@ class Amenity(BaseModel, Base):
     Attributes (DBStorage):
         __tablename__ (str): The MySQL table name.
         name (Column): Amenity name — max 128 chars, required.
-        place_amenities (relationship): Many-to-Many relationship back to Place
-                                        via the place_amenity association table.
+        place_amenities (relationship): Many-to-Many back to Place
+                                        via place_amenity table.
 
     Attributes (FileStorage):
         name (str): The amenity name.

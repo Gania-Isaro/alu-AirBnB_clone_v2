@@ -94,13 +94,26 @@ class TestUserInstantiation(unittest.TestCase):
 class TestUserSave(unittest.TestCase):
     """Tests for User save method."""
 
+    @unittest.skipIf(IS_DB, "Use test_save_updates_updated_at_db for DB")
     def test_save_updates_updated_at(self):
-        """Test that save updates updated_at."""
+        """Test that save updates updated_at (FileStorage)."""
         obj = User()
         old = obj.updated_at
         time.sleep(0.05)
         obj.save()
         self.assertGreater(obj.updated_at, old)
+
+    @unittest.skipIf(not IS_DB, "DBStorage version — requires valid fields")
+    def test_save_updates_updated_at_db(self):
+        """Test that save updates updated_at (DBStorage)."""
+        from models import storage
+        obj = User(email="savetest@db.com", password="testpwd123")
+        old = obj.updated_at
+        time.sleep(0.05)
+        obj.save()
+        self.assertGreater(obj.updated_at, old)
+        storage.delete(obj)
+        storage.save()
 
 
 if __name__ == "__main__":

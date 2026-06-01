@@ -116,7 +116,7 @@ class TestConsoleCreate(unittest.TestCase):
 
     @unittest.skipIf(not IS_DB, "DBStorage create test only")
     def test_create_state_db_count(self):
-        """Test that create State adds exactly one row to states via MySQLdb."""
+        """Verify create State adds one states row, checked via MySQLdb."""
         import MySQLdb
         conn = MySQLdb.connect(
             host=os.getenv("HBNB_MYSQL_HOST", "localhost"),
