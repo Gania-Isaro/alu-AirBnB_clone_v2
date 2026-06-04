@@ -51,9 +51,9 @@ class BaseModel:
 
     def __str__(self):
         """Return string representation of the BaseModel instance."""
-        return "[{}] ({}) {}".format(
-            type(self).__name__, self.id, self.__dict__
-        )
+        d = {k: v for k, v in self.__dict__.items()
+             if k != '_sa_instance_state'}
+        return "[{}] ({}) {}".format(type(self).__name__, self.id, d)
 
     def save(self):
         """Update updated_at to now, register with storage, and save."""
