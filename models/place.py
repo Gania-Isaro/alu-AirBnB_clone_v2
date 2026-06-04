@@ -75,7 +75,7 @@ class Place(BaseModel, Base):
             "Amenity",
             secondary="place_amenity",
             viewonly=False,
-            back_populates="place_amenities"
+            backref="place_amenities"
         )
     else:
         city_id = ""
