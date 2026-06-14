@@ -1,0 +1,11 @@
+/* styles/4-common.css */
+body {
+    padding: 0;
+    margin: 0;
+    font-family: Circular, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background-color: white;
+}
+
+#main {
+    padding: 0 30px;
+}
