@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ssh -i ~/.ssh/school -o StrictHostKeyChecking=no -o ConnectTimeout=10 ubuntu@52.70.87.10 \"echo connected && whoami && hostname\")",
+      "Bash(ssh -i ~/.ssh/school -o StrictHostKeyChecking=no -o ConnectTimeout=10 ubuntu@3.93.218.74 \"echo connected && whoami && hostname\")",
+      "Bash(ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=10 ubuntu@52.70.87.10 \"echo connected && whoami\")"
+    ]
+  }
+}
